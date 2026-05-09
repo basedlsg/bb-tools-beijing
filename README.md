@@ -27,7 +27,11 @@ pnpm install
 
 ### 🇨🇳 free-food-beijing *(new)*
 
-Scans **5 sources** across the English and Chinese web to find Beijing events with free food/drinks. Uses Stagehand + OpenRouter (Llama 3.3 70B) for AI-powered extraction, with strict grading to eliminate false positives.
+Scans **5 sources** across the English and Chinese web to find Beijing events with free food/drinks. Uses Stagehand for AI-powered extraction, with type-aware scoring and a fallback so the user always gets something.
+
+**Model selection** (auto-detected at runtime):
+- If `ANTHROPIC_API_KEY` is set → talks to Anthropic directly (recommended — most reliable, best at Chinese, no OpenRouter detour). Override the model with `ANTHROPIC_MODEL=...`.
+- Otherwise → OpenRouter. Defaults to `meta-llama/llama-3.3-70b-instruct:free` so users without credits aren't blocked, but if that free tier is broken upstream you'll see a clear error directing you to top up or pick another model. Override with `OPENROUTER_MODEL=...`.
 
 **Sources scraped:**
 | Source | Language | What it covers |
@@ -39,11 +43,13 @@ Scans **5 sources** across the English and Chinese web to find Beijing events wi
 | [豆瓣 (Douban)](https://douban.com) | 中文 | Community events, parties, exhibitions |
 
 **Features:**
-- 🔍 Bilingual scraping (English + Chinese web)
+- 🔍 Bilingual scraping (English + Chinese web) + targeted web-search phase
 - 🌐 All output in English (Chinese event names auto-translated)
-- 📊 Strict 0-100 grading with disqualifier rules (paid food festivals, BYOB, past events)
+- 📊 0-100 grading with type-aware scoring (tech meetup / hackathon / mixer score by type, not just explicit "free food" mentions)
+- 📅 Deterministic date filtering — handles both ISO and Chinese date formats (`2026年5月15日`, `5月15日`) in code, not the prompt
 - 🔄 Cross-source deduplication
-- 🎨 Color-coded confidence levels (🟢🔵🟡🟠)
+- 🎯 Always-show-top-N fallback when nothing meets the high-confidence threshold
+- 🎨 Color-coded confidence levels (🟢🔵🟡🟠⚪)
 
 ```bash
 pnpm free-food-beijing
